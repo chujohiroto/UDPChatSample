@@ -115,6 +115,7 @@ public class Chat : MonoBehaviour
 				else
 				{
 					Debug.Log("Block");
+					ReceiveCallback(result.Buffer);
 				}
 			}
 			else
