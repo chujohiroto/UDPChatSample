@@ -132,7 +132,7 @@ public class Chat : MonoBehaviour
 	public async void Send()
 	{
 		var bytesData = Encoding.UTF8.GetBytes(InputChat.text);
-		await UdpClient.SendAsync(bytesData, bytesData.Length, new IPEndPoint(IPAddress.Parse(InputAddress.text), int.Parse(InputPort.text)));
+		await UdpClient.SendAsync(bytesData, bytesData.Length, ConnectIPEndPoint);
 		ChatLog.text += "\n My:" + InputChat.text;
 		InputChat.text = "";
 	}
