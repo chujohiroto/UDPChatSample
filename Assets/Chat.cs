@@ -101,6 +101,7 @@ public class Chat : MonoBehaviour
 					ChatLog.text += "\n Connect Request";
 					var bytesData = Encoding.UTF8.GetBytes("e:Accept");
 					UdpClient.Send(bytesData, bytesData.Length, ConnectIPEndPoint);
+					return;
 				}
 				Debug.Log("Block");
                 return;
