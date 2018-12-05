@@ -103,6 +103,13 @@ public class Chat : MonoBehaviour
 					UdpClient.Send(bytesData, bytesData.Length, ConnectIPEndPoint);
 					return;
 				}
+				// 接続許可であればそのまま通信しはじめる
+				if (Encoding.UTF8.GetString(result.Buffer) == "e:Accept")
+                {
+                    ConnectIPEndPoint = result.RemoteEndPoint;
+					ChatLog.text += "\n Connect Start";
+                    return;
+                }
 				Debug.Log("Block");
                 return;
 			}
@@ -117,8 +124,7 @@ public class Chat : MonoBehaviour
 		{
 			Debug.Log("Connecting...");
             var bytesData = Encoding.UTF8.GetBytes("e:Connect");
-			ConnectIPEndPoint = new IPEndPoint(IPAddress.Parse(InputAddress.text), int.Parse(InputPort.text));
-			UdpClient.Send(bytesData, bytesData.Length, ConnectIPEndPoint);
+			UdpClient.Send(bytesData, bytesData.Length, new IPEndPoint(IPAddress.Parse(InputAddress.text), int.Parse(InputPort.text)));
 			await Task.Delay(1000);
 		}
 	}
