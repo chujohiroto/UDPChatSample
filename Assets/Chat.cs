@@ -36,6 +36,8 @@ public class Chat : MonoBehaviour
 
 	private IPEndPoint ConnectIPEndPoint = new IPEndPoint(0,0);
 
+	private bool isConnect;
+
 	private async void Start()
 	{
 		UdpClient = new UdpClient(BindPort);
@@ -101,12 +103,14 @@ public class Chat : MonoBehaviour
 					ChatLog.text += "\n Connect Request";
 					var bytesData = Encoding.UTF8.GetBytes("e:Accept");
 					UdpClient.Send(bytesData, bytesData.Length, ConnectIPEndPoint);
+					isConnect = true;
 				}
 				// 接続許可であればそのまま通信しはじめる
 				else if (Encoding.UTF8.GetString(result.Buffer) == "e:Accept")
 				{
 					ConnectIPEndPoint = result.RemoteEndPoint;
 					ChatLog.text += "\n Connect Start";
+					isConnect = true;
 				}
 				else
 				{
@@ -123,7 +127,7 @@ public class Chat : MonoBehaviour
     
 	private async void Connect()
 	{
-		for (int i = 0; i < 10; i++)
+		while (!isConnect)
 		{
 			Debug.Log("Connecting...");
             var bytesData = Encoding.UTF8.GetBytes("e:Connect");
