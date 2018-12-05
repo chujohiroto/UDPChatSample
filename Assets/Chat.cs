@@ -91,8 +91,8 @@ public class Chat : MonoBehaviour
 		for (; ;)
 		{
 			var result = await UdpClient.ReceiveAsync();
-            //接続先以外のパケットが流れてきたらブロックする
-			if(result.RemoteEndPoint.Address != ConnectIPEndPoint.Address)
+			//接続先以外のパケットが流れてきたらブロックする
+			if (result.RemoteEndPoint.Address != ConnectIPEndPoint.Address)
 			{
 				//接続要求であればそのまま許可する
 				if (Encoding.UTF8.GetString(result.Buffer) == "e:Connect")
@@ -101,20 +101,23 @@ public class Chat : MonoBehaviour
 					ChatLog.text += "\n Connect Request";
 					var bytesData = Encoding.UTF8.GetBytes("e:Accept");
 					UdpClient.Send(bytesData, bytesData.Length, ConnectIPEndPoint);
-					return;
 				}
 				// 接続許可であればそのまま通信しはじめる
-				if (Encoding.UTF8.GetString(result.Buffer) == "e:Accept")
-                {
-                    ConnectIPEndPoint = result.RemoteEndPoint;
+				else if (Encoding.UTF8.GetString(result.Buffer) == "e:Accept")
+				{
+					ConnectIPEndPoint = result.RemoteEndPoint;
 					ChatLog.text += "\n Connect Start";
-                    return;
-                }
-				Debug.Log("Block");
-                return;
+				}
+				else
+				{
+					Debug.Log("Block");
+				}
 			}
-			Debug.Log(result.RemoteEndPoint.ToString());
-			ReceiveCallback(result.Buffer);
+			else
+			{
+				Debug.Log(result.RemoteEndPoint.ToString());
+				ReceiveCallback(result.Buffer);
+			}
 		}
 	}
     
@@ -133,6 +136,7 @@ public class Chat : MonoBehaviour
 	{
 		var bytesData = Encoding.UTF8.GetBytes(InputChat.text);
 		await UdpClient.SendAsync(bytesData, bytesData.Length, ConnectIPEndPoint);
+		Debug.Log("Send:" + InputChat.text);
 		ChatLog.text += "\n My:" + InputChat.text;
 		InputChat.text = "";
 	}
