@@ -39,19 +39,24 @@ public class Chat : MonoBehaviour
 	private async void Start()
 	{
 		UdpClient = new UdpClient(BindPort);
-		if(isStun){
-			STUN(UdpClient);
-		}
-		else
+
+		if (!isStun)
 		{
 			//Private IP を取る手段　もうちょいいい方法求む
-            using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
-            {
-                socket.Connect("8.8.8.8", 65530);
-                IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+			using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.IPv6HopByHopOptions))
+			{
+				socket.Connect("8.8.8.8", 65530);
+				IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
 				MyIPEndPoint = endPoint;
-            }
+				MyIPEndPoint.Port = BindPort;
+			}
 		}
+
+        if (isStun)
+        {
+            STUN(UdpClient);
+        }
+
 
 		MyEndPoint.text = MyIPEndPoint.ToString();
         
@@ -89,6 +94,14 @@ public class Chat : MonoBehaviour
             //接続先以外のパケットが流れてきたらブロックする
 			if(result.RemoteEndPoint.Address != ConnectIPEndPoint.Address)
 			{
+				//接続要求であればそのまま許可する
+				if (Encoding.UTF8.GetString(result.Buffer) == "e:Connect")
+				{
+					ConnectIPEndPoint = result.RemoteEndPoint;
+					ChatLog.text += "\n Connect Request";
+					var bytesData = Encoding.UTF8.GetBytes("e:Accept");
+					UdpClient.Send(bytesData, bytesData.Length, ConnectIPEndPoint);
+				}
 				Debug.Log("Block");
                 return;
 			}
@@ -96,12 +109,17 @@ public class Chat : MonoBehaviour
 			ReceiveCallback(result.Buffer);
 		}
 	}
-
-	private void Connect()
+    
+	private async void Connect()
 	{
-		var bytesData = Encoding.UTF8.GetBytes("e:Connect");
-		ConnectIPEndPoint = new IPEndPoint(IPAddress.Parse(InputAddress.text), int.Parse(InputPort.text));
-		UdpClient.Send(bytesData, bytesData.Length, ConnectIPEndPoint);
+		for (int i = 0; i < 10; i++)
+		{
+			Debug.Log("Connecting...");
+            var bytesData = Encoding.UTF8.GetBytes("e:Connect");
+			ConnectIPEndPoint = new IPEndPoint(IPAddress.Parse(InputAddress.text), int.Parse(InputPort.text));
+			UdpClient.Send(bytesData, bytesData.Length, ConnectIPEndPoint);
+			await Task.Delay(1000);
+		}
 	}
 
 	public async void Send()
@@ -119,8 +137,12 @@ public class Chat : MonoBehaviour
         {
             return;
         }
+		if(receiveString == "e:Accept"){
+			Debug.Log("Accept: " + receiveString);
+			ChatLog.text += "\n Connect Accept";
+		}
 		Debug.Log("Received: " + receiveString);
-
+        
     	ChatLog.text += "\n Other:" + receiveString;
 	}
 }

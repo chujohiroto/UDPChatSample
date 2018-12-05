@@ -1284,7 +1284,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c326c4abe480941a8a9add02c2089ac9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BindPort: 0
+  BindPort: 10000
   isStun: 0
   ChatLog: {fileID: 1795530329}
   ButtonEnterChat: {fileID: 485940105}
